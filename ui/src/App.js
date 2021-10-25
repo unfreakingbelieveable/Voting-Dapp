@@ -64,7 +64,7 @@ class App extends React.Component {
         <header className="App-header">
           <p>Voting Happens Here</p>
           <Form createVote={this.createVote} />
-          <div style={style}>
+          <div className='vote-frame' style={style}>
             {voting}
           </div>
         </header>

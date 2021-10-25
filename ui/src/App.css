@@ -28,6 +28,13 @@
   color: #61dafb;
 }
 
+.vote-container {
+  padding: 5%;
+  border-radius: 20%;
+  border-style: solid;
+  border-color: white;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

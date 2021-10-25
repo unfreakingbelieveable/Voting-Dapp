@@ -1,3 +1,4 @@
+import '../App.css';
 import React from 'react';
 import { web3 } from '../web3';
 const voteABI = require('../abi/Vote.json');
@@ -27,11 +28,11 @@ class Vote extends React.Component {
         this.setState({ name: temp })
     }
 
-    render () {
-        return (<div>
+    render() {
+        return (<div className="vote-container" >
                     <p>{this.state.name}</p>
-                    <p>{this.state.address}</p>
-                </div>);
+                </div>
+        );
     }
 }
 
