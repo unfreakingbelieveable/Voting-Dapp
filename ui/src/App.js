@@ -32,13 +32,13 @@ class App extends React.Component {
     let _name = event.target[0].value;
 
     // let _regEnd = event.target[1].value
-    let _regEnd = now + 5;
+    let _regEnd = now + 30;
 
     // let _voteStart = event.target[2].value;
-    let _voteStart = now + 10;
+    let _voteStart = now + 60;
 
     // let _voteEnd = event.target[3].value;
-    let _voteEnd = now + 15;
+    let _voteEnd = now + 90;
 
     await factory.methods.addVote(_name, _regEnd, _voteStart, _voteEnd).send({ from: accounts[0] });
 
