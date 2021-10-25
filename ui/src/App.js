@@ -5,8 +5,6 @@ import Vote from './components/Vote';
 import Form from './components/Form';
 import React from 'react';
 
-const style = { display: 'flex'}
-
 class App extends React.Component {
 
   state = {
@@ -25,6 +23,7 @@ class App extends React.Component {
   }
 
   async createVote(event) {
+    // TODO: Add datetime picker and epoch converter
     event.preventDefault();
 
     let now = Math.round(Date.now() / 1000)
@@ -64,7 +63,7 @@ class App extends React.Component {
         <header className="App-header">
           <p>Voting Happens Here</p>
           <Form createVote={this.createVote} />
-          <div className='vote-frame' style={style}>
+          <div className='vote-frame'>
             {voting}
           </div>
         </header>

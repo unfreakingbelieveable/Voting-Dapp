@@ -12,12 +12,30 @@ class Vote extends React.Component {
         name: '',
         contract: undefined,
         candidateNames: [],
+        numVotes: 0,
     }
 
     constructor() {
         super();
         this.addCandidate = this.addCandidate.bind(this);
         this.vote = this.vote.bind(this);
+        this.calculateVotes = this.calculateVotes.bind(this);
+    }
+
+    async calculateVotes() {
+        let _votes = await Promise.all(this.state.candidateNames.map( async _name => {
+            let _v = await this.state.contract.methods.candidates(_name).call();
+            return _v;
+        }));
+        
+        let _total = 0;
+        _votes.forEach( _v => {
+            if(_v !== undefined) { 
+                _total += parseInt(_v.numVotes);
+            }
+        });
+
+        this.setState({ numVotes: _total })
     }
 
     async vote(event) {
@@ -28,7 +46,7 @@ class Vote extends React.Component {
 
     async getCandidates() {
         let candidateNames = await this.state.contract.methods.getCandidates().call();
-        this.setState({ candidateNames });
+        this.setState({ candidateNames }, async () => await this.calculateVotes());
     }
 
     async addCandidate(event) {
@@ -54,9 +72,11 @@ class Vote extends React.Component {
         this.setState({ name: temp })
 
         this.getCandidates();
+
     }
 
     render() {
+
         let candidates;
 
         if (this.state.candidateNames.length > 0) {
@@ -73,6 +93,7 @@ class Vote extends React.Component {
 
         return (<div className="vote-container" >
                     <p className="vote-title">{this.state.name}</p>
+                    {this.state.numVotes}
                     <form onSubmit={this.addCandidate} >
                         <input type="text" placeholder="Candidate Name" />
                         <input type='submit' value='Add Candidate' />

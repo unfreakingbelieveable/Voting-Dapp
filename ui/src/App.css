@@ -35,6 +35,11 @@
   border-color: white;
 }
 
+.vote-frame {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .vote-title {
   text-decoration: underline;
 }
