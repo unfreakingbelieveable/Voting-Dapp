@@ -7,12 +7,15 @@ const noCandidatesMsg = 'No candidates yet. Try adding one!';
 
 class Vote extends React.Component {
 
+    intervalID;
+
     state = {
         address: '',
         name: '',
         contract: undefined,
         candidateNames: [],
         numVotes: 0,
+        voteMap: {},
     }
 
     constructor() {
@@ -32,9 +35,12 @@ class Vote extends React.Component {
         _votes.forEach( _v => {
             if(_v !== undefined) { 
                 _total += parseInt(_v.numVotes);
+
+                let _oldMap = this.state.voteMap;
+                _oldMap[_v.name] = _v.numVotes;
+                this.setState({ voteMap: _oldMap});
             }
         });
-
         this.setState({ numVotes: _total })
     }
 
@@ -73,17 +79,27 @@ class Vote extends React.Component {
 
         this.getCandidates();
 
+        this.intervalID = setInterval(this.calculateVotes, 5000);
+
+    }
+
+    async componentWillUnmount() {
+        clearInterval(this.intervalID);
     }
 
     render() {
 
         let candidates;
 
+        console.log(this.state.voteMap);
+
         if (this.state.candidateNames.length > 0) {
             candidates = this.state.candidateNames.map((candidate) => {
+                let _percentVotes = (this.state.voteMap[candidate] / this.state.numVotes) * 100
                 return (<div className='flex' >
                             <p>{candidate}</p>
                             <button value={candidate} onClick={this.vote}>Vote</button>
+                            {_percentVotes}%
                         </div>
                 )
             });
