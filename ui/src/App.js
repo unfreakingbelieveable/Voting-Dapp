@@ -8,7 +8,7 @@ import React from 'react';
 class App extends React.Component {
 
   refreshInterval;
-  refreshTimeout = 3000;
+  refreshTimeout = 10 * 1000;
 
   state = {
     votes: [],
@@ -25,24 +25,24 @@ class App extends React.Component {
     this.setState({ votes });
   }
 
+  convertTime(epoch) {
+    return Math.round(new Date(epoch).getTime() / 1000);
+  }
+
   async createVote(event) {
-    // TODO: Add datetime picker and epoch converter
     event.preventDefault();
 
-    let now = Math.round(Date.now() / 1000)
-
     let _name = event.target[0].value;
+    let _regEnd = this.convertTime(event.target[1].value);
+    let _voteStart = this.convertTime(event.target[2].value);
+    let _voteEnd = this.convertTime(event.target[3].value);
 
-    // let _regEnd = event.target[1].value
-    let _regEnd = now + 30;
+    try { 
+      await factory.methods.addVote(_name, _regEnd, _voteStart, _voteEnd).send({ from: accounts[0] });
+      event.target.reset();
+    } catch (err) {
 
-    // let _voteStart = event.target[2].value;
-    let _voteStart = now + 60;
-
-    // let _voteEnd = event.target[3].value;
-    let _voteEnd = now + 90;
-
-    await factory.methods.addVote(_name, _regEnd, _voteStart, _voteEnd).send({ from: accounts[0] });
+    }
 
     this.getVotes();
   }

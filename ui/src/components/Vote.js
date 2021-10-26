@@ -9,7 +9,7 @@ class Vote extends React.Component {
 
     voteInterval;
     contract;
-    refreshTimeout = 3000;
+    refreshTimeout = 10 * 1000;
 
     state = {
         currTime: 0,
@@ -56,6 +56,7 @@ class Vote extends React.Component {
         event.preventDefault();
         let _name = event.target.value;
         await this.state.contract.methods.vote(_name).send({ from: accounts[0] });
+        this.updateData();
     }
 
     async getCandidates() {
@@ -131,8 +132,8 @@ class Vote extends React.Component {
 
                 return (<div className='flex' >
                             <p>{candidate}</p>
+                            <p>: {_percentVotes}%</p>
                             <p>{_voteBtn}</p>
-                            <p>{_percentVotes}%</p>
                         </div>
                 )
             });
