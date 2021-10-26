@@ -7,15 +7,21 @@ const noCandidatesMsg = 'No candidates yet. Try adding one!';
 
 class Vote extends React.Component {
 
-    intervalID;
+    voteInterval;
+    contract;
+    refreshTimeout = 3000;
 
     state = {
+        currTime: 0,
         address: '',
         name: '',
         contract: undefined,
         candidateNames: [],
         numVotes: 0,
         voteMap: {},
+        regEnd: 0,
+        voteStart: 0,
+        voteEnd: 0,
     }
 
     constructor() {
@@ -23,6 +29,8 @@ class Vote extends React.Component {
         this.addCandidate = this.addCandidate.bind(this);
         this.vote = this.vote.bind(this);
         this.calculateVotes = this.calculateVotes.bind(this);
+        this.getCandidates = this.getCandidates.bind(this);
+        this.updateData = this.updateData.bind(this);
     }
 
     async calculateVotes() {
@@ -52,7 +60,7 @@ class Vote extends React.Component {
 
     async getCandidates() {
         let candidateNames = await this.state.contract.methods.getCandidates().call();
-        this.setState({ candidateNames }, async () => await this.calculateVotes());
+        this.setState({ candidateNames });
     }
 
     async addCandidate(event) {
@@ -67,39 +75,64 @@ class Vote extends React.Component {
         );
     }
 
+    async updateTime() {
+        let temp = Math.round(Date.now() / 1000)
+        this.setState({ currTime: temp });
+
+        temp = await this.state.contract.methods.regEnd().call();
+        this.setState({ regEnd: temp });
+
+        temp = await this.state.contract.methods.voteStart().call();
+        this.setState({ voteStart: temp });
+
+        temp = await this.state.contract.methods.voteEnd().call();
+        this.setState({ voteEnd: temp });
+    }
+
+    async updateData() {
+        await this.updateTime();
+        await this.getCandidates();
+        await this.calculateVotes();
+    }
+
     async componentDidMount() {
         let temp;
         this.setState({ address: this.props.address });
 
-        temp = await this.getContract(this.props.address);
-        this.setState({contract: temp});
+        this.contract = await this.getContract(this.props.address);
+        this.setState({ contract: this.contract });
 
-        temp = await temp.methods.name().call();
+        temp = await this.contract.methods.name().call();
         this.setState({ name: temp })
 
-        this.getCandidates();
+        await this.updateData();
 
-        this.intervalID = setInterval(this.calculateVotes, 5000);
+        this.voteInterval = setInterval(this.updateData, this.refreshTimeout);
 
     }
 
     async componentWillUnmount() {
-        clearInterval(this.intervalID);
+        clearInterval(this.voteInterval);
     }
 
     render() {
+        let _now = this.state.currTime;
 
         let candidates;
-
-        console.log(this.state.voteMap);
-
         if (this.state.candidateNames.length > 0) {
             candidates = this.state.candidateNames.map((candidate) => {
-                let _percentVotes = (this.state.voteMap[candidate] / this.state.numVotes) * 100
+                let _voteBtn;
+                if(_now > this.state.voteStart && _now < this.state.voteEnd) {
+                    _voteBtn = <button value={candidate} onClick={this.vote}>Vote</button>
+                }
+
+                let _percentVotes = Math.round((this.state.voteMap[candidate] / this.state.numVotes) * 100)
+                if (isNaN(_percentVotes)) { _percentVotes = 0 }
+
                 return (<div className='flex' >
                             <p>{candidate}</p>
-                            <button value={candidate} onClick={this.vote}>Vote</button>
-                            {_percentVotes}%
+                            <p>{_voteBtn}</p>
+                            <p>{_percentVotes}%</p>
                         </div>
                 )
             });
@@ -107,13 +140,20 @@ class Vote extends React.Component {
             candidates = noCandidatesMsg;
         }
 
+        let _form;
+        if (_now < this.state.regEnd) {
+            _form = ( 
+                <form onSubmit={this.addCandidate} >
+                    <input type="text" placeholder="Candidate Name" />
+                    <input type='submit' value='Add Candidate' />
+                </form>
+            )
+        }
+
         return (<div className="vote-container" >
                     <p className="vote-title">{this.state.name}</p>
-                    {this.state.numVotes}
-                    <form onSubmit={this.addCandidate} >
-                        <input type="text" placeholder="Candidate Name" />
-                        <input type='submit' value='Add Candidate' />
-                    </form>
+                    {this.state.numVotes} Votes
+                    {_form}
                     {candidates}
                 </div>
         );

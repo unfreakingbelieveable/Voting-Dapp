@@ -7,6 +7,9 @@ import React from 'react';
 
 class App extends React.Component {
 
+  refreshInterval;
+  refreshTimeout = 3000;
+
   state = {
     votes: [],
   }
@@ -46,6 +49,12 @@ class App extends React.Component {
 
   async componentDidMount() {
     await this.getVotes();
+
+    this.refreshInterval = setInterval(this.getVotes, this.refreshTimeout);
+  }
+
+  async componentWillUnmount() {
+    clearInterval(this.refreshInterval)
   }
 
   render() {
